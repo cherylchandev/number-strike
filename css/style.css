@@ -1,0 +1,611 @@
+/* ============================================================
+   Number Strike — cartoon arcade theme
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --c-bg-top: #7ec8ff;
+  --c-bg-bottom: #d7f3ff;
+  --game-bg-desktop: url("../assets/images/background_PC.png");
+  --home-bg-desktop: url("../assets/images/home_PC.png");
+  --leaderboard-bg-desktop: url("../assets/images/leaderboard_PC.png");
+  --game-bg-mobile: url("../assets/images/background_mobile.png");
+  --home-bg-mobile: url("../assets/images/home_mobile.png");
+  --leaderboard-bg-mobile: url("../assets/images/leaderboard_mobile.png");
+  --c-accent: #ff5d5d;
+  --c-yellow: #ffd93d;
+  --c-green: #4caf50;
+  --c-green-dark: #357a38;
+  --c-wood: #b07a3f;
+  --c-text: #333;
+  /* Comic Neue (a loaded web font, a free Comic Sans look-alike) first, so EVERY
+     device — PC, iPhone, Android, iPad — renders the identical handwritten font.
+     The rest are fallbacks only used if the web font fails to load. */
+  --font-fun: "Comic Neue", "Comic Sans MS", "Chalkboard SE", cursive, sans-serif;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-fun);
+  /* Comic Neue's regular weight is thinner than Comic Sans, so use its bold
+     weight as the baseline — closer to the chunkier Comic Sans stroke. */
+  font-weight: 700;
+  color: var(--c-text);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* Twemoji replaces each emoji with an <img class="emoji">. Size it to match the
+   surrounding text so it sits inline like a normal glyph (required by Twemoji). */
+img.emoji {
+  height: 1em;
+  width: 1em;
+  margin: 0 .05em 0 .1em;
+  vertical-align: -0.1em;
+  display: inline-block;
+}
+
+body {
+  background: linear-gradient(180deg, var(--c-bg-top) 0%, var(--c-bg-bottom) 100%);
+}
+
+/* ============ screens ============ */
+.screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.screen.active { display: flex; }
+.hidden { display: none !important; }
+
+/* ============ HOME ============ */
+#home-screen {
+  align-items: center;
+  justify-content: center;
+  background:
+    var(--home-bg-desktop) center / cover no-repeat,
+    linear-gradient(180deg, var(--c-bg-top) 0%, var(--c-bg-bottom) 100%);
+}
+
+.home-content { text-align: center; }
+
+.game-title {
+  font-size: clamp(3rem, 10vw, 6.5rem);
+  line-height: 1.05;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+}
+.title-word {
+  display: block;
+  /* paint the fill ON TOP of the stroke so the outline sits cleanly outside the
+     letters instead of eating into them */
+  paint-order: stroke fill;
+}
+/* Smooth outline via -webkit-text-stroke (traces the glyph curves, so round
+   letters stay smooth). Width is in `em` so it scales with the font size.
+   No drop shadow — outline only. */
+.title-number {
+  color: var(--c-yellow);
+  -webkit-text-stroke: 0.07em #b8860b;
+  transform: rotate(-3deg);
+}
+.title-strike {
+  color: var(--c-accent);
+  -webkit-text-stroke: 0.07em #a02020;
+  transform: rotate(2deg);
+}
+
+.home-knife-decor {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  margin: .5rem 0 1.5rem;
+  animation: bob 1.6s ease-in-out infinite;
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-15deg); }
+  50% { transform: translateY(-14px) rotate(-15deg); }
+}
+
+.home-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* ============ buttons ============ */
+.big-btn {
+  font-family: var(--font-fun);
+  font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+  font-weight: bold;
+  padding: .8em 2em;
+  border: 4px solid rgba(0,0,0,.25);
+  border-radius: 999px;
+  cursor: pointer;
+  color: #fff;
+  box-shadow: 0 6px 0 rgba(0,0,0,.25);
+  transition: transform .08s, box-shadow .08s;
+}
+.big-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(0,0,0,.25);
+}
+.btn-play, .btn-play-again, .btn-save { background: var(--c-green); }
+.btn-instructions { background: #4a90d9; }
+.btn-submit { background: var(--c-green); }
+.btn-retry, .btn-home { background: #f39c12; }
+
+/* ============ INSTRUCTIONS MODAL ============ */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, .55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.modal-box {
+  background: #fffbe9;
+  border: 6px solid var(--c-yellow);
+  border-radius: 24px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 85vh;
+  box-shadow: 0 12px 30px rgba(0,0,0,.35);
+  /* header stays put; only the body scrolls */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal-header {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 1.2rem 1.6rem 0.6rem;
+}
+.modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0 1.6rem 1.6rem;
+}
+.modal-box h2 {
+  text-align: center;
+  color: var(--c-accent);
+  margin: 0;
+  font-size: 2rem;
+}
+.modal-close {
+  position: absolute;
+  /* inset from the corner so iOS Safari's rounded-corner overflow clipping
+     doesn't cut off the top of the button */
+  top: 0.6rem;
+  right: 0.6rem;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 3px solid rgba(0,0,0,.2);
+  background: var(--c-accent);
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* cartoon-styled scrollbar to match the theme */
+.modal-body { scrollbar-width: auto; scrollbar-color: #f39c12 #fdf0c0; }
+.modal-body::-webkit-scrollbar { width: 18px; }
+.modal-body::-webkit-scrollbar-track { background: #fdf0c0; border-radius: 20px; margin: 6px; }
+.modal-body::-webkit-scrollbar-thumb {
+  background: #f39c12;
+  border-radius: 20px;
+  border: 4px solid #fdf0c0;
+}
+.modal-body::-webkit-scrollbar-thumb:hover { background: #e08e0b; }
+/* normal weight for the instructions body so it isn't all-bold; the <strong>
+   words (e.g. "20 seconds") still render bold and stand out */
+.instructions-list { padding-left: 1.3rem; font-weight: 400; }
+.instructions-list > li { margin-bottom: 1rem; line-height: 1.85; }
+.instructions-list ul { padding-left: 1.2rem; margin-top: .4rem; }
+.instructions-list ul li { margin-bottom: .25rem; }
+.red-q { color: var(--c-accent); font-weight: bold; font-size: 1.2em; }
+
+/* ---- inline chips used in the instructions (buttons / keys / icons) ---- */
+.ikey {                                   /* keyboard keycap */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5em;
+  padding: .12em .55em;
+  margin: 0 .12em;
+  font-size: .82em;
+  font-weight: bold;
+  color: #444;
+  background: linear-gradient(#ffffff, #e3e3e3);
+  border: 2px solid #b3b3b3;
+  border-bottom-width: 3px;
+  border-radius: 7px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .15);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.ikey-space { min-width: 5em; }           /* spacebar is wider */
+
+.ibtn {                                   /* mini game button */
+  display: inline-flex;
+  align-items: center;
+  gap: .25em;
+  padding: .12em .7em;
+  margin: 0 .12em;
+  font-size: .8em;
+  font-weight: bold;
+  color: #fff;
+  border: 2px solid rgba(0, 0, 0, .18);
+  border-radius: 999px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .18);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.ibtn-submit { background: var(--c-green); }
+.ibtn-retry  { background: #f39c12; }
+
+.iheart { color: #e8273c; font-size: 1.1em; letter-spacing: 2px; vertical-align: middle; }
+.screenshot-placeholder {
+  margin-top: .45rem;
+  border: 3px dashed #c9b96a;
+  border-radius: 10px;
+  background: #fff7d6;
+  color: #a08a2e;
+  text-align: center;
+  padding: .9rem;
+  font-style: italic;
+}
+
+/* ============ GAME SCREEN ============ */
+#game-screen { flex-direction: column; }
+
+@media (min-width: 701px) {
+  #game-screen {
+    background:
+      var(--game-bg-desktop) center / cover no-repeat,
+      linear-gradient(180deg, #fff4d8 0%, #ffecc4 100%);
+  }
+}
+
+/* ---- mobile / portrait backgrounds (override the desktop images) ---- */
+@media (max-width: 700px) {
+  #home-screen {
+    background:
+      var(--home-bg-mobile) center / cover no-repeat,
+      linear-gradient(180deg, var(--c-bg-top) 0%, var(--c-bg-bottom) 100%);
+  }
+  #game-screen {
+    background:
+      var(--game-bg-mobile) center / cover no-repeat,
+      linear-gradient(180deg, #fff4d8 0%, #ffecc4 100%);
+  }
+  /* cover = fill the whole screen edge-to-edge (slight crop, no margins) */
+  .ending-blur-bg {
+    background:
+      var(--leaderboard-bg-mobile) center / cover no-repeat,
+      linear-gradient(180deg, var(--c-bg-top), var(--c-bg-bottom));
+  }
+}
+
+.hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 16px;
+  pointer-events: none;
+}
+.hud-left, .hud-right { flex: 0 0 auto; }
+.hud-center { flex: 1; }
+
+.timer {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #fff;
+  border: 5px solid var(--c-yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.9rem;
+  font-weight: bold;
+  color: var(--c-text);
+  box-shadow: 0 4px 8px rgba(0,0,0,.2);
+}
+.timer.timer-low {
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+  animation: pulse .5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+.formula {
+  /* Fixed size + screen-centered, independent of how long the formula is,
+     so the box never grows or shrinks between levels and always sits on the
+     horizontal center of the screen (regardless of the timer/hearts widths). */
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  width: min(86vw, 360px);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 5px solid #4a90d9;
+  border-radius: 18px;
+  font-size: clamp(1.3rem, 4.5vw, 2rem);
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0,0,0,.2);
+  white-space: nowrap;
+}
+/* small side margins so the "?" has the same breathing room as the digits */
+.formula .q { color: var(--c-accent); margin: 0 .12em; }
+
+.hud-right { text-align: right; }
+.hearts { font-size: clamp(1.5rem, 5vw, 2.1rem); letter-spacing: 3px; }
+.heart { color: #e8273c; transition: filter .3s, opacity .3s, transform .3s; }
+/* iOS/Android draw ❤ as a colour emoji that ignores `color`, so the lost state
+   used to stay red on phones. grayscale + fade works on emoji everywhere. */
+.heart.lost { filter: grayscale(1); opacity: .35; transform: scale(.85); }
+.score-row, .level-row {
+  margin-top: 4px;
+  font-weight: bold;
+  font-size: clamp(.95rem, 3vw, 1.25rem);
+  background: rgba(255, 255, 255, .96);
+  border-radius: 10px;
+  padding: 2px 10px;
+  text-align: center;
+}
+
+#game-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.game-bottom-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 18px;
+}
+
+.round-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  background: rgba(255,255,255,.95);
+  border: 6px solid var(--c-accent);
+  border-radius: 22px;
+  padding: 1em 1.6em;
+  font-size: clamp(1.3rem, 5vw, 2rem);
+  font-weight: bold;
+  color: var(--c-accent);
+  text-align: center;
+  box-shadow: 0 10px 26px rgba(0,0,0,.3);
+}
+.round-message.good {
+  border-color: var(--c-green);
+  color: var(--c-green-dark);
+}
+
+/* ============ ENDING SCREEN ============ */
+#ending-screen {
+  flex-direction: column;
+  align-items: center;
+  /* "safe center" centers when it fits but switches to top-aligned (scrollable)
+     when the panel is taller than the screen, so long leaderboards never trap
+     the title or buttons off-screen */
+  justify-content: safe center;
+  gap: 1.4rem;
+  padding: 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;   /* momentum scrolling on iOS */
+}
+.ending-blur-bg {
+  /* fixed (not absolute) so the leaderboard background stays put behind the
+     content while the panel scrolls */
+  position: fixed;
+  inset: 0;
+}
+/* desktop leaderboard image; gated so it can't override the mobile rule above
+   (which appears earlier in the file) on small screens */
+@media (min-width: 701px) {
+  .ending-blur-bg {
+    background:
+      var(--leaderboard-bg-desktop) center / cover no-repeat,
+      linear-gradient(180deg, var(--c-bg-top), var(--c-bg-bottom));
+  }
+}
+/* Not-Top-10 (score) screen: blur the leaderboard image itself. The slight
+   scale hides the soft edges that blurring would otherwise reveal. */
+#ending-screen.blurred .ending-blur-bg {
+  filter: blur(8px);
+  transform: scale(1.08);
+}
+
+.ending-panel {
+  position: relative;
+  z-index: 2;
+  background: #fffbe9;
+  border: 6px solid var(--c-yellow);
+  border-radius: 24px;
+  padding: 1.6rem 2rem;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(0,0,0,.3);
+}
+.ending-congrats { color: var(--c-accent); font-size: clamp(1.3rem, 5vw, 1.9rem); font-weight: 700; margin-bottom: 1rem; }
+.ending-score-msg { color: var(--c-accent); font-size: clamp(1.5rem, 6vw, 2.2rem); }
+
+.name-entry {
+  display: flex;
+  gap: .6rem;
+  justify-content: center;
+  margin-bottom: .6rem;
+  flex-wrap: wrap;
+}
+.name-warning {
+  color: var(--c-accent);
+  font-weight: bold;
+  font-size: .95rem;
+  margin: -.2rem 0 1rem;
+}
+#player-name {
+  font-family: var(--font-fun);
+  font-size: 1.2rem;
+  padding: .5em .9em;
+  border: 4px solid #4a90d9;
+  border-radius: 999px;
+  outline: none;
+  text-align: center;
+  max-width: 230px;
+}
+
+.leaderboard-wrap h3 { margin-bottom: .5rem; color: #b8860b; }
+.leaderboard-list {
+  list-style: none;
+  text-align: left;
+  max-height: 40vh;
+  overflow-y: auto;
+  scrollbar-width: auto;
+  scrollbar-color: #f39c12 #fdf0c0;
+}
+.leaderboard-list::-webkit-scrollbar { width: 18px; }
+.leaderboard-list::-webkit-scrollbar-track { background: #fdf0c0; border-radius: 20px; }
+.leaderboard-list::-webkit-scrollbar-thumb {
+  background: #f39c12;
+  border-radius: 20px;
+  border: 4px solid #fdf0c0;
+}
+.leaderboard-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: .35em .8em;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1.05rem;
+}
+.leaderboard-list li:nth-child(odd) { background: #fff3c4; }
+.leaderboard-list li.me {
+  background: var(--c-green);
+  color: #fff;
+}
+/* fixed rem width (not em) so the bigger medal glyph can't widen the column,
+   keeping every rank + name aligned whether it's a medal or a number */
+.leaderboard-list .rank {
+  flex: 0 0 2.4rem;
+  text-align: center;
+  color: #b8860b;
+}
+.leaderboard-list .rank.medal { font-size: 1.3em; }   /* 🥇🥈🥉 a touch bigger */
+.leaderboard-list li.me .rank { color: #fff; }
+.leaderboard-list .lb-name { flex: 1; overflow: hidden; text-overflow: ellipsis; padding: 0 .5em; }
+
+/* ending buttons row: Home Page (left) + Play Again (right), equal size */
+.ending-buttons {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.ending-buttons .big-btn {
+  flex: 0 0 auto;
+  width: 250px;
+  max-width: 80vw;
+  display: flex;            /* center icon + text as a group, dead-center */
+  align-items: center;
+  justify-content: center;
+  padding-left: 1em;        /* trim side padding so wide labels stay centered */
+  padding-right: 1em;
+  white-space: nowrap;
+}
+/* These buttons are flex, which trims the literal space between the emoji and
+   the label — so set the gap explicitly on the emoji image to match the inline
+   home-page buttons. */
+.ending-buttons .big-btn img.emoji { margin-right: 0.3em; }
+
+/* ============ mobile tweaks ============ */
+/* matches the mobile-background breakpoint so the layout switches together */
+@media (max-width: 700px) {
+  .timer { width: 54px; height: 54px; font-size: 1.4rem; border-width: 4px; }
+  /* The timer + hearts/score/level already fill the top corners, so drop the
+     (still fixed-size) formula box onto its own row beneath them to avoid
+     overlapping the Score/Level boxes. */
+  .formula {
+    border-width: 4px;
+    top: 120px;                 /* sits clearly below the timer + hearts/score/level */
+    width: min(92vw, 340px);
+    height: 56px;
+    font-size: clamp(1.2rem, 5.5vw, 1.7rem);
+  }
+  .big-btn { padding: .7em 1.4em; }
+  /* keep the HUD clear of the notch/status bar and the buttons clear of the
+     home-indicator/gesture bar (viewport-fit=cover lets content reach the edges) */
+  .hud { padding: 8px 10px; padding-top: max(8px, env(safe-area-inset-top)); }
+  .game-bottom-bar { padding: 10px 12px; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+
+  /* the instructions panel was over-padded and spacious on phones — trim it so
+     the yellow box doesn't dominate the screen */
+  .modal { padding: 1.4rem; }                 /* more margin around the box */
+  .modal-box { border-width: 5px; max-height: 80vh; }
+  .modal-box h2 { font-size: 1.6rem; }
+  .modal-header { padding: 1rem 1.2rem 0.4rem; }
+  .modal-close { width: 36px; height: 36px; font-size: 1.1rem; }  /* match the smaller header */
+  .modal-body { padding: 0 1.2rem 1.2rem; }
+  .instructions-list > li { margin-bottom: 0.7rem; line-height: 1.55; }
+}
+
+/* ============ rotate prompt (phones in landscape) ============ */
+/* The game is portrait-only; on a short landscape screen the target/buttons
+   won't fit, so cover everything and ask the player to rotate. Tablets stay
+   tall enough in landscape (max-height guard), so they're unaffected. */
+#rotate-notice { display: none; }
+@media (orientation: landscape) and (max-height: 500px) {
+  #rotate-notice {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: linear-gradient(180deg, var(--c-bg-top), var(--c-bg-bottom));
+  }
+  #rotate-notice .rotate-icon { font-size: 3rem; }
+  #rotate-notice p { font-size: 1.3rem; font-weight: 700; color: var(--c-text); }
+}

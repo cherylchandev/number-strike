@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Number Strike</title>
+
+  <!-- Link preview (WhatsApp, LinkedIn, Facebook, iMessage, Discord, etc.) -->
+  <meta name="description" content="A fast-paced math arcade game. Solve equations, throw the right number of knives, and climb the leaderboard.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Number Strike">
+  <meta property="og:url" content="https://number-strike.vercel.app/">
+  <meta property="og:title" content="Number Strike">
+  <meta property="og:description" content="Solve equations, throw knives, and climb the leaderboard in this fast-paced math arcade game.">
+  <meta property="og:image" content="https://number-strike.vercel.app/assets/images/thumbnail.jpg">
+  <meta property="og:image:secure_url" content="https://number-strike.vercel.app/assets/images/thumbnail.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Number Strike game thumbnail with a colorful party background.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Number Strike">
+  <meta name="twitter:description" content="Solve equations, throw knives, and climb the leaderboard in this fast-paced math arcade game.">
+  <meta name="twitter:image" content="https://number-strike.vercel.app/assets/images/thumbnail.jpg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=38">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+
+  <!-- Shown only on phones held in landscape (the game is designed for portrait) -->
+  <div id="rotate-notice">
+    <div class="rotate-icon">🔄</div>
+    <p>Please rotate your device to <strong>portrait</strong> to play.</p>
+  </div>
+
+  <!-- ============ HOME SCREEN ============ -->
+  <section id="home-screen" class="screen active">
+    <div class="home-content">
+      <h1 class="game-title">
+        <span class="title-word title-number">Number</span>
+        <span class="title-word title-strike">Strike</span>
+      </h1>
+      <div class="home-knife-decor">🎯</div>
+      <div class="home-buttons">
+        <button id="btn-play" class="big-btn btn-play">🎮 Play</button>
+        <button id="btn-instructions" class="big-btn btn-instructions">📖 Instructions</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INSTRUCTIONS MODAL ============ -->
+  <div id="instructions-modal" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>How to Play</h2>
+        <button id="btn-close-instructions" class="modal-close" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+      <ol class="instructions-list">
+        <li>
+          An equation will appear at the top of the screen. Players must solve for the
+          <span class="red-q">?</span> within <strong>20 seconds</strong>.
+        </li>
+        <li>
+          Throw the correct number of knives, then click the
+          <span class="ibtn ibtn-submit">✔ Submit</span> button at the bottom-right
+          corner. The center of the oak target will display the number of knives thrown.
+        </li>
+        <li>
+          Players can click the <span class="ibtn ibtn-retry">↺ Retry</span> button at the
+          bottom-left corner if they throw the wrong number of knives.
+        </li>
+        <li>
+          Controls:
+          <ul>
+            <li><strong>Mobile:</strong> Tap the screen.</li>
+            <li>
+              <strong>PC:</strong> Use the mouse click; press
+              <span class="ikey ikey-space">Space</span> to throw knives, press
+              <span class="ikey">R</span> to retry, and press
+              <span class="ikey">Enter</span> to submit an answer.
+            </li>
+          </ul>
+        </li>
+        <li>
+          There are <span class="iheart">❤ ❤ ❤</span> at the top-right corner.
+          One heart will be deducted if players:
+          <ul>
+            <li>Submit a wrong answer.</li>
+            <li>Fail to submit an answer before the timer ends.</li>
+            <li>Throw knives that collide with each other.</li>
+            <li>Throw knives into an empty space on the oak target.</li>
+          </ul>
+        </li>
+        <li>
+          Score calculation:
+          <ul>
+            <li><strong>10 points</strong>: Submit the correct answer within 20 seconds, or hit the bonus 🪙 coin when it appears outside the oak target.</li>
+            <li><strong>5 points</strong>: Retry and then submit the correct answer within 20 seconds.</li>
+          </ul>
+        </li>
+      </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ GAME SCREEN ============ -->
+  <section id="game-screen" class="screen">
+    <div class="hud">
+      <div class="hud-left">
+        <div id="timer" class="timer">30</div>
+      </div>
+      <div class="hud-center">
+        <div id="formula" class="formula"></div>
+      </div>
+      <div class="hud-right">
+        <div id="hearts" class="hearts">
+          <span class="heart" data-i="0">❤</span><span class="heart" data-i="1">❤</span><span class="heart" data-i="2">❤</span>
+        </div>
+        <div class="score-row">Score: <span id="score">0</span></div>
+        <div class="level-row">Level <span id="level">1</span></div>
+      </div>
+    </div>
+
+    <canvas id="game-canvas"></canvas>
+
+    <div id="round-message" class="round-message hidden"></div>
+
+    <div class="game-bottom-bar">
+      <button id="btn-retry" class="big-btn btn-retry">↺ Retry</button>
+      <button id="btn-submit" class="big-btn btn-submit">✔ Submit</button>
+    </div>
+  </section>
+
+  <!-- ============ ENDING SCREEN ============ -->
+  <section id="ending-screen" class="screen">
+    <div id="ending-blur-bg" class="ending-blur-bg"></div>
+
+    <div class="ending-panel">
+      <h2 id="ending-message" class="ending-congrats"></h2>
+      <div id="name-entry" class="name-entry">
+        <input id="player-name" type="text" maxlength="20" placeholder="Enter your name">
+        <button id="btn-save-score" class="big-btn btn-save">Save</button>
+      </div>
+      <div id="name-warning" class="name-warning hidden">Please choose a friendly name 🙂</div>
+      <div class="leaderboard-wrap">
+        <h3>🏆 Top 10 Leaderboard</h3>
+        <ol id="leaderboard-list" class="leaderboard-list"></ol>
+      </div>
+    </div>
+
+    <div class="ending-buttons">
+      <button id="btn-home" class="big-btn btn-home">🏠 Home Page</button>
+      <button id="btn-play-again" class="big-btn btn-play-again">🎮 Play Again</button>
+    </div>
+  </section>
+
+  <!-- Firebase compat SDK (works over file://) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <!-- Twemoji: renders the identical emoji set on every device (PC, iOS, Android) -->
+  <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@15.1.0/dist/twemoji.min.js" crossorigin="anonymous"></script>
+
+  <script src="js/firebase-config.js?v=38"></script>
+  <script src="js/audio.js?v=38"></script>
+  <script src="js/formula.js?v=38"></script>
+  <script src="js/target.js?v=38"></script>
+  <script src="js/profanity.js?v=38"></script>
+  <script src="js/leaderboard.js?v=38"></script>
+  <script src="js/game.js?v=38"></script>
+  <script src="js/main.js?v=38"></script>
+
+  <!-- Vercel Web Analytics (cookieless) — the /_vercel/ path is served by Vercel
+       once Analytics is enabled for the project -->
+  <script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
